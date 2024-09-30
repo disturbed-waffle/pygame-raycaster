@@ -4,10 +4,14 @@ from settings import *
 from map import *
 from player import *
 from raycasting import *
+from object_renderer import *
+
 
 class Game:
     def __init__(self, mode):
         pg.init()
+        pg.mouse.set_visible(False)
+        pg.event.set_grab(True)
         self.mode = mode
         self.screen = pg.display.set_mode(RES)
         self.clock = pg.time.Clock()
@@ -17,6 +21,7 @@ class Game:
     def new_game(self):
         self.map = Map(self)
         self.player = Player(self)
+        self.object_renderer = ObjectRenderer(self)
         self.raycasting = RayCasting(self)
 
     def update(self):
@@ -24,17 +29,20 @@ class Game:
         self.raycasting.update(self.mode)
         pg.display.flip()
         self.delta_time = self.clock.tick(FPS)
-        pg.display.set_caption(f'{self.clock.get_fps():.0f}')
+        pg.display.set_caption(f"{self.clock.get_fps():.0f}")
 
     def draw(self):
-        self.screen.fill('black')
-        if self.mode == 0:
+        if self.mode != 0:
+            self.object_renderer.draw()
+        else:
             self.map.draw()
             self.player.draw()
 
     def check_events(self):
         for event in pg.event.get():
-            if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
+            if event.type == pg.QUIT or (
+                event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE
+            ):
                 pg.quit()
                 sys.exit()
 
@@ -44,7 +52,11 @@ class Game:
             self.update()
             self.draw()
 
+
 if __name__ == "__main__":
-    mode = int(sys.argv[1])
+    if len(sys.argv) > 1:
+        mode = int(sys.argv[1])
+    else:
+        mode = 1
     game = Game(mode)
     game.run()
